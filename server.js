@@ -5,6 +5,9 @@ const app = express();
 // Url is : https://docs.google.com/spreadsheets/d/e/2PACX-1vS5vLFZSFMLsPGhm_JL1DnYk5c28AHJuViQg-e19uekrbViEDnRMW_-eb8fz03khqJ5XgLc3pKpIoM8/pub?gid=0&single=true&output=csv
 const url = "https://shorturl.at/jwY67";
 
+// Url for links list only : https://docs.google.com/spreadsheets/d/e/2PACX-1vS5vLFZSFMLsPGhm_JL1DnYk5c28AHJuViQg-e19uekrbViEDnRMW_-eb8fz03khqJ5XgLc3pKpIoM8/pub?output=csv
+const linksOnlyUrl = "https://shorturl.at/hqD47";
+
 app.get("/", async (req, res) => {
   console.log("In request");
   const link = await getTodaysLink();
@@ -14,12 +17,21 @@ app.get("/", async (req, res) => {
   //   );
 });
 
+app.get("/newver", async (req, res) => {
+  console.log("In request");
+  // TODO
+  res.send("Under construction");
+});
+
 app.listen(3000);
 
 async function getTodaysLink() {
   const { data } = await axios.get(url);
   const jsonData = csvJSON(data.replace("\r", ""));
-  const today = new Date();
+  // const today = new Date();
+  const today = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
   const date = today.getDate();
   const month = today.getMonth() + 1;
   const year = today.getFullYear();
