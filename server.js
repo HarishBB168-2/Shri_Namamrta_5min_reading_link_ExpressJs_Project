@@ -28,15 +28,13 @@ app.listen(3000);
 async function getTodaysLink() {
   const { data } = await axios.get(url);
   const jsonData = csvJSON(data.replace("\r", ""));
-  // const today = new Date();
-  const today = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-  );
-  const date = today.getDate();
-  const month = today.getMonth() + 1;
-  const year = today.getFullYear();
+  const datetime = await getCurrentISTTime();
+  const date = datetime[0];
+  const month = datetime[1];
+  const year = datetime[2];
 
   let link = "https://example.com/No-Valid-Date-Found";
+  console.log("Searching for : ", date, month, year);
   jsonData.forEach((item) => {
     const dt = item.Date;
     const [itemDate, itemMonth, itemYear] = dt.split(".");
@@ -47,6 +45,8 @@ async function getTodaysLink() {
       year === parseInt(itemYear)
     ) {
       link = item.Link;
+      console.log("Current server time : ", new Date());
+      console.log("Current IST time :>> ", datetime);
       console.log("Item found is : ", item);
     }
   });
@@ -79,5 +79,20 @@ function csvJSON(csv) {
 
   return result; //JavaScript object
 }
+
+const getCurrentISTTime = async () => {
+  const { data } = await axios.get(
+    "https://worldtimeapi.org/api/timezone/Asia/Kolkata"
+  );
+  console.log("datetime data.datetime :>> ", data.datetime);
+
+  const datetime = data.datetime;
+
+  const date = parseInt(datetime.slice(8, 10));
+  const month = parseInt(datetime.slice(5, 7));
+  const year = parseInt(datetime.slice(0, 4));
+
+  return [date, month, year];
+};
 
 console.log("Server started.");
