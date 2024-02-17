@@ -8,6 +8,8 @@ const url = "https://shorturl.at/jwY67";
 // Url for links list only : https://docs.google.com/spreadsheets/d/e/2PACX-1vS5vLFZSFMLsPGhm_JL1DnYk5c28AHJuViQg-e19uekrbViEDnRMW_-eb8fz03khqJ5XgLc3pKpIoM8/pub?output=csv
 const linksOnlyUrl = "https://shorturl.at/hqD47";
 
+const TIME_API_URL = "https://worldtimeapi.org/api/timezone/Asia/Kolkata";
+
 app.get("/", async (req, res) => {
   console.log("In request");
   const link = await getTodaysLink();
@@ -19,11 +21,25 @@ app.get("/", async (req, res) => {
 
 app.get("/newver", async (req, res) => {
   console.log("In request");
-  // TODO
-  res.send("Under construction");
+  const link = await getTodaysLink2();
+  res.redirect(link);
 });
 
 app.listen(3000);
+
+async function getTodaysLink2() {
+  const { data } = await axios.get(linksOnlyUrl);
+  const jsonData = csvJSON(data.replace("\r", ""));
+  const datetime = await getCurrentISTTime();
+  const dayOfYear = datetime[3];
+
+  const videoCount = jsonData.length;
+  const videoNoSelected = dayOfYear % videoCount;
+  const selectedLink = jsonData[videoNoSelected].Link;
+
+  console.log("jsonData.length :>> ", jsonData.length);
+  return selectedLink;
+}
 
 async function getTodaysLink() {
   const { data } = await axios.get(url);
@@ -81,18 +97,17 @@ function csvJSON(csv) {
 }
 
 const getCurrentISTTime = async () => {
-  const { data } = await axios.get(
-    "https://worldtimeapi.org/api/timezone/Asia/Kolkata"
-  );
+  const { data } = await axios.get(TIME_API_URL);
   console.log("datetime data.datetime :>> ", data.datetime);
 
   const datetime = data.datetime;
+  const dayOfYear = data.day_of_year;
 
   const date = parseInt(datetime.slice(8, 10));
   const month = parseInt(datetime.slice(5, 7));
   const year = parseInt(datetime.slice(0, 4));
 
-  return [date, month, year];
+  return [date, month, year, parseInt(dayOfYear)];
 };
 
 console.log("Server started.");
